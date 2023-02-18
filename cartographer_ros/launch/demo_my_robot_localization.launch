@@ -15,28 +15,28 @@
 -->
 
 <launch>
-  <arg name="robot_namespace" default="/"/>
-  <arg name="urdf_extras" default="$(find scout_description)/urdf/empty.urdf"/>
+  <param name="/use_sim_time" value="true" />
 
-  <param name="robot_description" command="$(find xacro)/xacro '$(find scout_description)/urdf/scout_v2.xacro'
-        robot_namespace:=$(arg robot_namespace) 
-        urdf_extras:=$(arg urdf_extras)" />
+  <param name="robot_description"
+    textfile="$(find cartographer_ros)/urdf/backpack_2d.urdf" />
 
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
   <node name="robot_state_publisher" pkg="robot_state_publisher"
     type="robot_state_publisher" />
-    
-    <node pkg="tf" type="static_transform_publisher" name="map_nav_broadcaster" args="0 0 0 0 0 0 base_link rslidar 10"/>
-    <!--<node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0.0 0.0 0.0 0 0 0.0 /odom /base_link 10"/>-->
 
   <node name="cartographer_node" pkg="cartographer_ros"
       type="cartographer_node" args="
           -configuration_directory $(find cartographer_ros)/configuration_files
-          -configuration_basename my_robot.lua"
+          -configuration_basename backpack_2d_localization.lua
+          -load_state_filename $(arg load_state_filename)"
       output="screen">
-    <remap from="points2" to="rslidar_points" />
+    <remap from="echoes" to="horizontal_laser_2d" />
   </node>
 
   <node name="cartographer_occupancy_grid_node" pkg="cartographer_ros"
       type="cartographer_occupancy_grid_node" args="-resolution 0.05" />
+
+  <node name="rviz" pkg="rviz" type="rviz" required="true"
+      args="-d $(find cartographer_ros)/configuration_files/demo_2d.rviz" />
+  <node name="playbag" pkg="rosbag" type="play"
+      args="--clock $(arg bag_filename)" />
 </launch>

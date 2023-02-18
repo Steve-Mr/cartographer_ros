@@ -25,6 +25,9 @@ set(PACKAGE_DEPENDENCIES
   rviz
 )
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+add_compile_options(-fPIC)
+
 if(WIN32)
   set(Boost_USE_STATIC_LIBS FALSE)
 endif()
